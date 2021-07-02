@@ -1,0 +1,7 @@
+.shortenForm {
+  margin: 5em;
+}
+
+.shortUrlFormControl:hover {
+  cursor: pointer;
+}
