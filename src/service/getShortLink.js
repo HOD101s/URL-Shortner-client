@@ -1,5 +1,5 @@
 import axios from "axios";
-if (process.env.NODE_ENV != "production") {
+if (process.env.NODE_ENV !== "production") {
   axios.defaults.baseURL = "http://127.0.0.1:5000";
 }
 axios.defaults.headers.post["Content-Type"] =
