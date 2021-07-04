@@ -1,6 +1,16 @@
 import { useState } from "react";
-import { Form, Button, Container, InputGroup } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Container,
+  InputGroup,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import getShortLink from "../service/getShortLink";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGlobe, faClipboard } from "@fortawesome/free-solid-svg-icons";
 
 export default function ShortenForm(props) {
   const [longUrl, setlongUrl] = useState("");
@@ -40,30 +50,43 @@ export default function ShortenForm(props) {
               <InputGroup>
                 <Form.Control type="text" placeholder={shortUrl} readOnly />
                 <InputGroup.Append>
-                  <InputGroup.Text
-                    id="basic-addon2"
-                    className="shortUrlFormControl"
-                    onClick={() => {
-                      window.open(shortUrl);
-                      window.focus();
-                    }}
-                  >
-                    Visit
+                  <InputGroup.Text>
+                    <OverlayTrigger
+                      placement="right"
+                      delay={{ show: 250, hide: 250 }}
+                      overlay={<Tooltip id="editPostTooltip">Visit</Tooltip>}
+                    >
+                      <FontAwesomeIcon
+                        icon={faGlobe}
+                        onClick={() => {
+                          window.open(shortUrl);
+                          window.focus();
+                        }}
+                      />
+                    </OverlayTrigger>
                   </InputGroup.Text>
                 </InputGroup.Append>
                 <InputGroup.Append>
-                  <InputGroup.Text
-                    className="shortUrlFormControl"
-                    id="basic-addon2"
-                    onClick={() => {
-                      navigator.clipboard.writeText(shortUrl);
-                      setcopyTag("Copied");
-                      setTimeout(() => {
-                        setcopyTag("Copy");
-                      }, 3000);
-                    }}
-                  >
-                    {copyTag}
+                  <InputGroup.Text>
+                    <OverlayTrigger
+                      placement="right"
+                      delay={{ show: 250, hide: 250 }}
+                      overlay={
+                        <Tooltip id="editPostTooltip">{copyTag}</Tooltip>
+                      }
+                    >
+                      <CopyToClipboard text={shortUrl}>
+                        <FontAwesomeIcon
+                          icon={faClipboard}
+                          onClick={() => {
+                            setcopyTag("Copied!");
+                            setTimeout(() => {
+                              setcopyTag("Copy");
+                            }, 5000);
+                          }}
+                        />
+                      </CopyToClipboard>
+                    </OverlayTrigger>
                   </InputGroup.Text>
                 </InputGroup.Append>
               </InputGroup>
