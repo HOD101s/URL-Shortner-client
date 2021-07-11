@@ -8,28 +8,37 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import getShortLink from "../service/getShortLink";
+import { getShortLink, isShortCodeAvailable } from "../service/requests";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGlobe, faClipboard } from "@fortawesome/free-solid-svg-icons";
+import {
+  faGlobe,
+  faClipboard,
+  faSearch,
+  faCheckCircle,
+  faTimesCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function ShortenForm(props) {
   const [longUrl, setlongUrl] = useState("");
-  const [shortUrl, setshortUrl] = useState(null);
+  const [shortUrl, setshortUrl] = useState("");
   const [generationError, setgenerationError] = useState(false);
   const [copyTag, setcopyTag] = useState("Copy");
+  const [checkAvailableIcon, setcheckAvailableIcon] = useState(faSearch);
+  const [checkCodeAvaiblableTag, setcheckCodeAvaiblableTag] = useState(
+    "Check Code Availability"
+  );
+  const [shortCode, setshortCode] = useState("");
 
   const generateShortLink = async () => {
     if (longUrl.length > 0) {
       setgenerationError(false);
-      const shortLink = await getShortLink(longUrl);
+      const shortLink = await getShortLink(longUrl, shortCode);
       if (shortLink) {
         setshortUrl(shortLink.short_url);
-      } else {
-        setgenerationError(true);
+        return;
       }
-    } else {
-      setgenerationError(true);
     }
+    setgenerationError(true);
   };
 
   return (
@@ -43,12 +52,19 @@ export default function ShortenForm(props) {
             onChange={(e) => setlongUrl(e.target.value)}
           />
           <Form.Text className="text-muted">We love valid URLs</Form.Text>
-          {shortUrl && (
-            <>
-              <br />
-              <Form.Label>Shortened URL</Form.Label>
-              <InputGroup>
-                <Form.Control type="text" placeholder={shortUrl} readOnly />
+
+          <br />
+          <Form.Label>Shortened URL</Form.Label>
+          <InputGroup>
+            <Form.Control
+              type="text"
+              placeholder={shortUrl ? shortUrl : "Short Link"}
+              value={shortUrl}
+              readOnly
+            />
+
+            {shortUrl && (
+              <>
                 <InputGroup.Append>
                   <InputGroup.Text>
                     <OverlayTrigger
@@ -89,16 +105,56 @@ export default function ShortenForm(props) {
                     </OverlayTrigger>
                   </InputGroup.Text>
                 </InputGroup.Append>
-              </InputGroup>
-              <Form.Text className="text-muted">
-                Short Links are active for 48 hours only
-              </Form.Text>
+              </>
+            )}
+
+            <>
+              <Form.Control
+                type="text"
+                placeholder="short code (at least 5 character long + no space)"
+                onChange={(e) => {
+                  setshortCode(e.target.value);
+                }}
+              />
+              <InputGroup.Append>
+                <InputGroup.Text>
+                  <OverlayTrigger
+                    placement="right"
+                    delay={{ show: 250, hide: 250 }}
+                    overlay={
+                      <Tooltip id="editPostTooltip">
+                        {checkCodeAvaiblableTag}
+                      </Tooltip>
+                    }
+                  >
+                    <FontAwesomeIcon
+                      icon={checkAvailableIcon}
+                      onClick={async () => {
+                        if (await isShortCodeAvailable(shortCode)) {
+                          setcheckAvailableIcon(faCheckCircle);
+                          setcheckCodeAvaiblableTag("Code Available");
+                        } else {
+                          setcheckAvailableIcon(faTimesCircle);
+                          setcheckCodeAvaiblableTag("Code Unavailable");
+                        }
+                        setTimeout(() => {
+                          setcheckAvailableIcon(faSearch);
+                          setcheckCodeAvaiblableTag("Check Code Availability");
+                        }, 3000);
+                      }}
+                    />
+                  </OverlayTrigger>
+                </InputGroup.Text>
+              </InputGroup.Append>
             </>
+          </InputGroup>
+          {shortUrl && (
+            <Form.Text className="text-muted">
+              Short Links are active for 48 hours only
+            </Form.Text>
           )}
           {generationError && (
-            <>
-              <h6>There seems to be some error with your URL</h6>
-            </>
+            <h6>There seems to be some error with your URL or custom code</h6>
           )}
         </Form.Group>
 
